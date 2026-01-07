@@ -10,15 +10,15 @@
 모든 팀원은 반드시 아래 구조를 유지합니다.
 - `seoul-subway-monitor/`
     - `src/` (소스 코드)
-        - [config.py]: API 키 및 DB 연결 정보 관리
-        - [api_client.py]: 서울시 API 호출 및 데이터 수집 로직
-        - [db_client.py]: Supabase 데이터 변환 및 삽입 로직
-        - [main.py]: 주기적 실행(Batch/Scheduler) 모듈
+        - `config.py`: API 키 및 데이터베이스(DB) 접속 정보 관리
+        - `api_client.py`: 서울시 OPEN API 연동 및 실시간 데이터 수집
+        - `db_client.py`: Supabase 데이터 변환 및 적재(Ingestion) 로직
+        - `main.py`: 메인 배치 프로세스 및 스케줄러 실행 모듈
     - `docs/` (문서)
-        - [schema.sql]: Supabase 테이블 생성 쿼리
-        - [analysis_plan.md]: 데이터 분석 상세 계획
-    - [.env]: 변수 설정 파일
-    - [requirements.txt]: 라이브러리 목록
+        - `schema.sql`: 데이터베이스 테이블 생성 스키마 SQL
+        - `analysis_plan.md`: 데이터 분석 상세 계획 및 시나리오
+    - `.env`: API Key 등 보안이 필요한 환경 변수 관리 파일
+    - `requirements.txt`: 프로젝트에 필요한 Python 라이브러리 의존성 목록
 
 ## 3. 데이터베이스(Supabase) 표준 스키마
 테이블명: `realtime_subway_positions`
@@ -55,13 +55,3 @@ API의 원본 컬럼명을 아래의 직관적인 `snake_case` 영문명으로 �
 - 모든 코드는 OOP(객체지향) 또는 모듈화된 함수 형태로 작성한다.
 - 예외 처리(Error Handling)를 포함하여 API 호출 실패나 DB 연결 오류 시 로그를 남겨야 한다.
 - 한글 주석을 상세히 달아 팀원 간 코드 가독성을 높인다.
-
-
-
-
-
-
-
-
-
-

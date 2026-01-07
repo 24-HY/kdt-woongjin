@@ -1,6 +1,0 @@
-requests==2.31.0
-python-dotenv==1.0.0
-schedule==1.2.1
-# Note: 'supabase' package is often used, but here we used raw requests for simplicity as per AGENT.md 'library' list saying 'requests, supabase-py'
-# If we used the official client:
-supabase==2.3.0
