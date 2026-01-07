@@ -39,8 +39,8 @@ class SupabaseClient:
                     "last_rec_date": item.get("lastRecptnDt"),
                     "last_rec_time": item.get("recptnDt"),
                     "direction_type": int(item.get("updnLine")) if item.get("updnLine") and item.get("updnLine").isdigit() else None,
-                    "dest_station_id": item.get("statnTid"),
-                    "dest_station_name": item.get("statnTnm"),
+                    # "dest_station_id": item.get("statnTid"),
+                    # "dest_station_name": item.get("statnTnm"),
                     "train_status": item.get("trainSttus"), # Keep as string or map if needed. Schema says 0,1,2,3 which are codes.
                     "is_express": item.get("directAt"), # Often '0' or '1'
                     "is_last_train": True if item.get("lstcarAt") == "1" else False,
