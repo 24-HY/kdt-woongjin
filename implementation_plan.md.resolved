@@ -1,0 +1,88 @@
+# Seoul Metro Real-time Monitoring Implementation Plan
+
+This project aims to collect real-time subway train location data from the Seoul Open Data Plaza API, store it in a Supabase (PostgreSQL) database, and perform data analysis to monitor and improve subway operations.
+
+## User Review Required
+> [!IMPORTANT]
+> **Credentials**: You will need to provide your **Supabase URL** and **Service Role Key** (or Anon Key with write access) in a `.env` file.
+> **API Key**: The sample URL provided works, but for production use, you should issue a real API key from Seoul Open Data Plaza.
+> **Folder Name**: I will create a new folder named `metro-ops` for this project.
+
+## Proposed Changes
+
+### Database Schema (Supabase/PostgreSQL)
+We will create a table named `realtime_subway_positions`.
+
+| API Field | Column Name | Type | Description |
+| :--- | :--- | :--- | :--- |
+| `subwayId` | `subway_id` | `VARCHAR` | Subway line ID (e.g., "1001" for Line 1) |
+| `subwayNm` | `line_name` | `VARCHAR` | Subway line name (e.g., "1호선") |
+| `trainNo` | `train_number` | `VARCHAR` | Unique train number |
+| `statnId` | `station_id` | `VARCHAR` | Current station ID |
+| `statnNm` | `station_name` | `VARCHAR` | Current station name |
+| `updnLine` | `updown_line` | `VARCHAR` | Direction (0: UP/Inner, 1: DOWN/Outer) |
+| `statnTid` | `destination_station_id` | `VARCHAR` | Destination station ID |
+| `statnTnm` | `destination_station_name` | `VARCHAR` | Destination station name |
+| `trainSttus` | `train_status_code` | `VARCHAR` | 0: Arrival, 1: Departure, 2: Transit |
+| `directAt` | `is_express` | `BOOLEAN` | Express train indicator (1: Express, 0: Normal) |
+| `lstcarAt` | `is_last_train` | `BOOLEAN` | Last train indicator (1: Last, 0: Normal) |
+| `recptnDt` | `generated_at` | `TIMESTAMP` | Time data was generated |
+| `recptnDt` (system) | `created_at` | `TIMESTAMP` | Time data was inserted (auto) |
+
+### Analysis Projects
+
+We will implement the following analysis capabilities:
+
+1.  **Real-time Headway Monitoring (실시간 배차 간격 모니터링)**
+    *   **Purpose**: Ensure trains maintain the scheduled interval to prevent overcrowding.
+    *   **Method**: Calculate the time delta between `generated_at` of trains arriving (`train_status_code`='0') at the same `station_id`.
+    *   **Goal**: Detect intervals exceeding 10 minutes during rush hour.
+
+2.  **Dwell Time Analysis (정차 시간 분석)**
+    *   **Purpose**: Identify stations where trains stop longer than expected, causing cascading delays.
+    *   **Method**: Measure time produced between 'Arrival' (0) and 'Departure' (1) status for the same `train_number`.
+    *   **Goal**: Optimize passenger flow at chronic bottleneck stations.
+
+3.  **Express Train Efficiency (급행 열차 효율성 분석)**
+    *   **Purpose**: Compare travel times of `is_express` vs normal trains.
+    *   **Method**: Track `train_number` across multiple stations to calculate average velocity.
+    *   **Goal**: Validate the time-saving benefit of express trains.
+
+4.  **End-of-Service Dynamics (막차 운행 패턴 분석)**
+    *   **Purpose**: Monitor the `is_last_train` flagged trains to ensure they clear the lines correctly.
+    *   **Method**: Track the accumulated delays of trains marked as last trains.
+    *   **Goal**: Improve night-time maintenance window scheduling.
+
+### Directory Structure [NEW]
+```
+kdt-woongjin/
+└── metro-ops/
+    ├── .env (user to create)
+    ├── collector.py (Data collection script)
+    ├── schema.sql (SQL for table creation)
+    ├── analysis/
+    │   ├── headway_monitor.py
+    │   └── dwell_time_analysis.py
+    └── README.md (Project documentation)
+```
+
+### Data Collector Script (`collector.py`)
+-   **Dependencies**: `requests`, `python-dotenv`
+-   **Logic**:
+    1.  Load env vars.
+    2.  Loop through target lines (initially Line 1-9).
+    3.  Fetch data from Seoul API.
+    4.  Parse JSON and map fields.
+    5.  Insert into Supabase via REST API (`POST /rest/v1/realtime_subway_positions`).
+    6.  Sleep for 10-20 seconds and repeat.
+
+## Verification Plan
+
+### Automated Tests
+*   **Script Dry Run**: Run `collector.py` with a dry-run flag (or just one iteration) to print parsed data without inserting, to verify mapping.
+    *   `python metro-ops/collector.py --dry-run`
+*   **Supabase Connection**: Attempt a simple read query to Supabase after setup to ensure connectivity.
+
+### Manual Verification
+*   **Database Check**: Log into Supabase Dashboard (user side) or use a fetch script to verify that rows are being inserted with correct types.
+*   **Data Consistency**: Compare the `generated_at` time in DB with current time to ensure data is fresh.
